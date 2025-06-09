@@ -7,6 +7,15 @@ export default async function webgpu() {
   const engine  = await Engine.initialize(canvas);
   const device = engine.device;
 
+  // Set the canvas size to match the window size and device pixel ratio
+  // This ensures that the canvas is rendered at the correct resolution
+  const devicePixelRatio = window.devicePixelRatio || 1;
+  canvas.width = window.innerWidth * devicePixelRatio;
+  canvas.height = window.innerHeight * devicePixelRatio ;
+
+  canvas.style.width = `${window.innerWidth}px`;
+  canvas.style.height = `${window.innerHeight}px`;
+
   const vertexData = new Float32Array([
     // x,    y
     -1.0, -1.0, // bottom left

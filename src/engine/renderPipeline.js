@@ -1,4 +1,4 @@
-export class RenderPipelineBuilder {
+export default class RenderPipelineBuilder {
     constructor(device) {
         this.device = device;
         //vs_main and fs_main are default entry points for vertex and fragment shaders

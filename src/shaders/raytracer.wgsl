@@ -14,7 +14,22 @@ fn vs_main(
     return output;
 }
 
-fn ray_color(ray_direction: vec3f) -> vec3f {
+fn hit_sphere(sphere_center: vec3f, radius: f32, ray_origin: vec3f, ray_direction: vec3f) -> bool {
+    let oc = sphere_center - ray_origin; 
+    let a = dot(ray_direction, ray_direction);
+    let b = 2.0 * dot(oc, ray_direction);
+    let c = dot(oc, oc) - radius * radius;
+    let discriminant = b * b - 4.0 * a * c;
+    return discriminant >= 0.0; // Returns true if the ray intersects the sphere
+
+}
+
+fn ray_color(ray_direction: vec3f, ray_origin: vec3f) -> vec3f {
+    
+    if(hit_sphere(vec3f(0.0, 0.0, -1.0), 0.5, ray_origin, ray_direction)) {
+        return vec3f(1.0, 0.0, 0.0); // Red color for the sphere
+    }
+    
     let a = 0.5 *(ray_direction.y + 1.0); 
     let white = vec3f(1.0, 1.0, 1.0); 
     let blue = vec3f(0.5, 0.7, 1.0); 
@@ -49,7 +64,7 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4f {
 
     // Calculate ray direction
     let ray_direction = normalize(vec3f(viewport_x, viewport_y, -focal_length));
-    let ray_color = ray_color(ray_direction); 
+    let ray_color = ray_color(ray_direction, camera_position); 
     return vec4f(ray_color, 1.0); 
 
 }

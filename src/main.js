@@ -39,19 +39,41 @@ export default async function webgpu() {
       { shaderLocation:0 , offset:0, format: 'float32x2'}
     ]
   };
+
+  const canvasSize = new Float32Array([
+    canvas.width,
+    canvas.height
+  ]); 
+  const canvasSizeBuffer = device.createBuffer({
+    size: canvasSize.byteLength,
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+  });
+  device.queue.writeBuffer(canvasSizeBuffer, 0, canvasSize);
+
+ 
   const shaderModule = device.createShaderModule({
     code: rayTracer
   })
 
   const pipelineBuilder = new RenderPipelineBuilder(device);
   const renderPipeline = pipelineBuilder
-    .setPipelineLayout(device.createPipelineLayout({ bindGroupLayouts: [] }))
     .setShaderModule(shaderModule)
     .setVertexBuffers([bufferLayout])
     .setTargetFormats([engine.canvasFormat])
     .setPrimitive("triangle-list")
     .build()
-  const commandBuffer = engine.encodeRenderPass(6, renderPipeline, vertexBuffer);
+
+   const bindGroupLayout = renderPipeline.getBindGroupLayout(0);
+
+  // Create the bind group
+  let bindGroup = device.createBindGroup({
+      layout: bindGroupLayout,
+      entries: [{
+          binding: 0,
+          resource: { buffer: canvasSizeBuffer }
+      }]
+  });
+  const commandBuffer = engine.encodeRenderPass(6, renderPipeline, vertexBuffer, bindGroup);
   await engine.submitCommand(commandBuffer);
 }
 

@@ -4,6 +4,7 @@ export default class RenderPipelineBuilder {
         //vs_main and fs_main are default entry points for vertex and fragment shaders
         // They can be overridden using setVertexShader and setFragmentShader methods.
         this.descriptor = {
+            layout: "auto", 
             vertex: {
                 entryPoint: "vs_main",
                 buffers: []

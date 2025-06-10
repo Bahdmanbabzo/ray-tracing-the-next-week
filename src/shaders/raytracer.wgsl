@@ -2,7 +2,7 @@ struct VertexOutput {
     @builtin(position) position: vec4f,
     @location(0) color: vec4f,
 };
-
+@group(0) @binding(0) var<uniform> canvas_size: vec2f; 
 @vertex
 fn vs_main(
     @location(0) position: vec2f,
@@ -40,7 +40,7 @@ fn ray_color(ray_direction: vec3f, ray_origin: vec3f) -> vec3f {
 @fragment
 fn fs_main(input: VertexOutput) -> @location(0) vec4f {
 
-    let aspect_ratio = 16.0 / 9.0;
+    let aspect_ratio = canvas_size.x/ canvas_size.y;
     let image_width = 400.0; 
 
     //calculate image height and ensure it is at least one

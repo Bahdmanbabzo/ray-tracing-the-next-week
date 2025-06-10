@@ -1,6 +1,7 @@
 import Engine from './engine/engine.js';
 import RenderPipelineBuilder from './engine/renderPipeline.js';
 import quadShaderCode from './shaders/quad.wgsl?raw';
+import rayTracer from './shaders/rayTracer.wgsl?raw';
 
 export default async function webgpu() {
   const canvas = document.querySelector('canvas');
@@ -39,7 +40,7 @@ export default async function webgpu() {
     ]
   };
   const shaderModule = device.createShaderModule({
-    code: quadShaderCode
+    code: rayTracer
   })
 
   const pipelineBuilder = new RenderPipelineBuilder(device);

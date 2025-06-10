@@ -14,6 +14,14 @@ fn vs_main(
     return output;
 }
 
+fn ray_color(ray_direction: vec3f) -> vec3f {
+    let a = 0.5 *(ray_direction.y + 1.0); 
+    let white = vec3f(1.0, 1.0, 1.0); 
+    let blue = vec3f(0.5, 0.7, 1.0); 
+
+    return mix(white, blue, a); 
+}
+
 @fragment
 fn fs_main(input: VertexOutput) -> @location(0) vec4f {
 
@@ -33,7 +41,7 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4f {
     let camera_position = vec3f(0.0, 0.0, 0.0);
 
     // Convert input.color.xy to screen space
-    let ndc = (input.color.xy * 2.0) - 1.0; // Convert to NDC (-1 to 1)
+    let ndc = (input.color.xy * 2.0) - 1.0;
 
     // Map to viewport coordinates
     let viewport_x = ndc.x * (viewport_width * 0.5 );
@@ -41,8 +49,7 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4f {
 
     // Calculate ray direction
     let ray_direction = normalize(vec3f(viewport_x, viewport_y, -focal_length));
-    let ray_color = ray_direction * 0.5 + 0.5; // Map to [0, 1] range for color
+    let ray_color = ray_color(ray_direction); 
     return vec4f(ray_color, 1.0); 
-
 
 }

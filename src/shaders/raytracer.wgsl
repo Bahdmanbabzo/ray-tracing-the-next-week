@@ -14,20 +14,28 @@ fn vs_main(
     return output;
 }
 
-fn hit_sphere(sphere_center: vec3f, radius: f32, ray_origin: vec3f, ray_direction: vec3f) -> bool {
+fn hit_sphere(sphere_center: vec3f, radius: f32, ray_origin: vec3f, ray_direction: vec3f) -> f32 {
     let oc = sphere_center - ray_origin; 
     let a = dot(ray_direction, ray_direction);
-    let b = 2.0 * dot(oc, ray_direction);
+    let b = -2.0 * dot(oc, ray_direction);
     let c = dot(oc, oc) - radius * radius;
     let discriminant = b * b - 4.0 * a * c;
-    return discriminant >= 0.0; // Returns true if the ray intersects the sphere
+
+    if (discriminant < 0.0) {
+        return -1.0; // No intersection
+    } else {
+        return (-b - sqrt(discriminant)) / (2.0 * a); // Return the nearest intersection point
+    }; 
 
 }
 
 fn ray_color(ray_direction: vec3f, ray_origin: vec3f) -> vec3f {
-    
-    if(hit_sphere(vec3f(0.0, 0.0, -1.0), 0.5, ray_origin, ray_direction)) {
-        return vec3f(1.0, 0.0, 0.0); // Red color for the sphere
+
+    let t = hit_sphere(vec3f(0.0, 0.0, -1.0), 0.5, ray_origin, ray_direction);
+    if (t > 0.0) {
+        let hit_point = ray_origin + t * ray_direction; 
+        let normal = normalize( hit_point - vec3f(0.0, 0.0, -1.0));
+        return 0.5 * (normal + vec3f(1.0, 1.0, 1.0)); // Simple shading based on normal
     }
     
     let a = 0.5 *(ray_direction.y + 1.0); 
@@ -64,7 +72,7 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4f {
 
     // Calculate ray direction
     let ray_direction = normalize(vec3f(viewport_x, viewport_y, -focal_length));
-    let ray_color = ray_color(ray_direction, camera_position); 
-    return vec4f(ray_color, 1.0); 
+    let pixel_color = ray_color(ray_direction, camera_position); 
+    return vec4f(pixel_color, 1.0); 
 
 }

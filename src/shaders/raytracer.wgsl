@@ -30,11 +30,12 @@ fn hit_sphere(sphere_center: vec3f, radius: f32, ray_origin: vec3f, ray_directio
 }
 
 fn ray_color(ray_direction: vec3f, ray_origin: vec3f) -> vec3f {
-
+    var hit_point: vec3f;
+    var normal: vec3f;
     let t = hit_sphere(vec3f(0.0, 0.0, -1.0), 0.5, ray_origin, ray_direction);
     if (t > 0.0) {
-        let hit_point = ray_origin + t * ray_direction; 
-        let normal = normalize( hit_point - vec3f(0.0, 0.0, -1.0));
+        hit_point = ray_origin + t * ray_direction; 
+        normal = normalize( hit_point - vec3f(0.0, 0.0, -1.0));
         return 0.5 * (normal + vec3f(1.0, 1.0, 1.0)); // Simple shading based on normal
     }
     

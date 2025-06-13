@@ -32,9 +32,9 @@ fn ray_color(ray_direction: vec3f, ray_origin: vec3f) -> vec3f {
     var normal: vec3f;
     let sphere_count = 3; 
     let spheres = array<vec3f, 3>(
-        vec3f(0.0, 0.0, -2.0), // Sphere center
-        vec3f(1.0, 0.0, -2.0), // Ground plane
-        vec3f(-1.0, 0.0, -2.0) // Another sphere for variety
+        vec3f(0.0, 0.0, -3.0), // Sphere center
+        vec3f(1.0, 0.0, -3.0), // Ground plane
+        vec3f(-1.0, 0.0, -3.0) // Another sphere for variety
     );
     var i = 0u;
     for(var i: i32; i < sphere_count; i++) {
@@ -59,7 +59,8 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4f {
     let aspect_ratio = canvas_size.x/ canvas_size.y;
 
     // Camera setup
-    let focal_length = 1.0;
+    let fov = 30.0; 
+    let focal_length = 1.0 / tan(radians(fov) * 0.5);
     let camera_position = vec3f(0.0, 0.0, 0.0);
 
     // Convert input.color.xy to screen space

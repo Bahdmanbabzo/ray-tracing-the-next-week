@@ -34,7 +34,7 @@ fn hit_sphere(sphere_center: vec3f, radius: f32, ray_origin: vec3f, ray_directio
 fn ray_color(ray_direction: vec3f, ray_origin: vec3f) -> vec3f {
     var hit_point: vec3f;
     var normal: vec3f;
-    let sphere_count = 3; 
+    let sphere_count = 1; 
     let spheres = array<vec3f, 1>(
         vec3f(0.0, 0.0, -3.0)
     );
@@ -44,9 +44,9 @@ fn ray_color(ray_direction: vec3f, ray_origin: vec3f) -> vec3f {
         if (t > 0.0) {
             hit_point = ray_origin + t * ray_direction; 
             normal = normalize(hit_point - spheres[i]);
-            let front_facing: bool = is_front_facing(ray_direction, -normal);
-            return select(vec3f(0.5, 0.5, 0.5), vec3f(1.0, 0.0, 0.0), front_facing); // gray or red
+            return 0.5 * (normal + vec3f(1.0, 1.0, 1.0)); // Simple shading based on normal
         }
+        
     }
     
     let a = 0.5 *(ray_direction.y + 1.0); 

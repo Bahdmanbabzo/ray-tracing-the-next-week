@@ -50,6 +50,11 @@ export default async function webgpu() {
   });
   device.queue.writeBuffer(canvasSizeBuffer, 0, canvasSize);
 
+  const debugBuffer = device.createBuffer({
+    size: 4,
+    usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC
+  });
+  device.queue.writeBuffer(debugBuffer, 0, new Float32Array([0.0]));
  
   const shaderModule = device.createShaderModule({
     code: rayTracer
@@ -68,10 +73,10 @@ export default async function webgpu() {
   // Create the bind group
   let bindGroup = device.createBindGroup({
       layout: bindGroupLayout,
-      entries: [{
-          binding: 0,
-          resource: { buffer: canvasSizeBuffer }
-      }]
+      entries: [
+        { binding: 0, resource: { buffer: canvasSizeBuffer }}, 
+        { binding: 1, resource: { buffer: debugBuffer }}
+      ]
   });
   const commandBuffer = engine.encodeRenderPass(6, renderPipeline, vertexBuffer, bindGroup);
   await engine.submitCommand(commandBuffer);

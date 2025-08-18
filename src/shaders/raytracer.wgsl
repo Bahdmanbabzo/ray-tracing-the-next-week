@@ -18,9 +18,19 @@ fn is_front_facing(ray_direction: vec3f, normal: vec3f) -> bool {
     return dot(ray_direction, normal) > 0.0; 
 };
 // https://dekoolecentrale.nl/wgsl-fns/rand11Sin
+// Generates a random float
 fn rand11(n: f32) -> f32 { 
     return fract(sin(n) * 43758.5453123); 
 };
+// Generates a random vec3 
+fn randVec3(p:f32) -> vec3<f32> {
+    return vec3<f32>(
+        fract(sin(p * 12.9898) * 43758.5453),
+        fract(sin(p * 78.233) * 24634.6345),
+        fract(sin(p * 45.164) * 12345.6789)
+    );
+}
+
 
 fn hit_sphere(sphere_center: vec3f, radius: f32, ray_origin: vec3f, ray_direction: vec3f) -> f32 {
     let oc = sphere_center - ray_origin; 
@@ -46,10 +56,9 @@ fn ray_color(ray_direction: vec3f, ray_origin: vec3f) -> vec3f {
     );
     var i = 0u;
     for(var i: i32; i < sphere_count; i++) {
-        let t = hit_sphere(spheres[i], 0.5, ray_origin, ray_direction);
+        let t = hit_sphere(spheres[i], 1.0, ray_origin, ray_direction);
         if (t > 0.0) {
             hit_point = ray_origin + t * ray_direction; 
-            let random = rand11(2.0); 
             normal = normalize(hit_point - spheres[i]);
             return 0.5 * (normal + vec3f(1.0, 1.0, 1.0) * random_number[0]); // Simple shading based on normal
         };
@@ -80,7 +89,7 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4f {
     let viewport_x = ndc.x * aspect_ratio; 
     let viewport_y = ndc.y ; 
 
-    let n = ndc.x * 12.9898 + ndc.y * 78.233 + random_number[0] + 0.1234;
+    let n = ndc.x * 12.9898 + ndc.y * 78.233 + 0.1234;
     let rnd = rand11(n); 
     random_number[0] = rnd; 
 

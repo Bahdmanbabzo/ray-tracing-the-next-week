@@ -23,14 +23,23 @@ fn rand11(n: f32) -> f32 {
     return fract(sin(n) * 43758.5453123); 
 }
 // Generates a random vec3 
-fn randVec3(p:f32) -> vec3<f32> {
-    return vec3<f32>(
+fn randVec3(p:f32) -> vec3f {
+    return vec3f(
         fract(sin(p * 12.9898) * 43758.5453),
         fract(sin(p * 78.233) * 24634.6345),
         fract(sin(p * 45.164) * 12345.6789)
     );
 }
 
+fn randUnitVecAnalytic(seed: f32) -> vec3f {
+    let v = randVec3(seed); 
+    let u1 = v.x; 
+    let u2 = v.y;
+    let z = 1.0 - 2.0 * u1; 
+    let r = sqrt(max(0.0, 1.0 - z * z));
+    let phi = 2.0 * 3.141592653589793 * u2; 
+    return vec3f(r * cos(phi), r * sin(phi), z);
+}
 
 fn hit_sphere(sphere_center: vec3f, radius: f32, ray_origin: vec3f, ray_direction: vec3f) -> f32 {
     let oc = sphere_center - ray_origin; 
@@ -60,7 +69,7 @@ fn ray_color(ray_direction: vec3f, ray_origin: vec3f) -> vec3f {
         if (t > 0.0) {
             hit_point = ray_origin + t * ray_direction; 
             normal = normalize(hit_point - spheres[i]);
-            return 0.5 * (normal + vec3f(1.0, 1.0, 1.0) * random_number[0]); // Simple shading based on normal
+            return 0.5 * random_number[0]; // Simple shading based on normal
         };
         
     };
@@ -91,11 +100,11 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4f {
 
     let n = ndc.x * 12.9898 + ndc.y * 78.233 + 0.1234;
     let rnd = rand11(n); 
-    random_number[0] = randVec3(rnd); 
+    random_number[0] = randUnitVecAnalytic(rnd); 
 
     // Calculate ray direction
-    let ray_direction = normalize(vec3f(viewport_x, viewport_y, -focal_length));
-    let pixel_color = ray_color(ray_direction, camera_position); 
+    let camera_ray_direction = normalize(vec3f(viewport_x, viewport_y, -focal_length));
+    let pixel_color = ray_color(camera_ray_direction, camera_position); 
     return vec4f(pixel_color, 1.0); 
 
 }

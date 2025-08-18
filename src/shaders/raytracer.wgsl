@@ -12,16 +12,16 @@ fn vs_main(
     // Transform the position to clip space
     output.position = vec4f(position, 0.0, 1.0);
     return output;
-};
+}
 
 fn is_front_facing(ray_direction: vec3f, normal: vec3f) -> bool {
     return dot(ray_direction, normal) > 0.0; 
-};
+}
 // https://dekoolecentrale.nl/wgsl-fns/rand11Sin
 // Generates a random float
 fn rand11(n: f32) -> f32 { 
     return fract(sin(n) * 43758.5453123); 
-};
+}
 // Generates a random vec3 
 fn randVec3(p:f32) -> vec3<f32> {
     return vec3<f32>(
@@ -45,7 +45,7 @@ fn hit_sphere(sphere_center: vec3f, radius: f32, ray_origin: vec3f, ray_directio
         return (-b - sqrt(discriminant)) / (2.0 * a); // Return the nearest intersection point
     }; 
 
-};
+}
 
 fn ray_color(ray_direction: vec3f, ray_origin: vec3f) -> vec3f {
     var hit_point: vec3f;
@@ -70,7 +70,7 @@ fn ray_color(ray_direction: vec3f, ray_origin: vec3f) -> vec3f {
     let blue = vec3f(0.5, 0.7, 1.0); 
 
     return mix(white, blue, a); 
-};
+}
 
 @fragment
 fn fs_main(input: VertexOutput) -> @location(0) vec4f {

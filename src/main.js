@@ -51,10 +51,10 @@ export default async function webgpu() {
   device.queue.writeBuffer(canvasSizeBuffer, 0, canvasSize);
 
   const debugBuffer = device.createBuffer({
-    size: 4,
+    size: 16,
     usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC
   });
-  device.queue.writeBuffer(debugBuffer, 0, new Float32Array([0.0]));
+  device.queue.writeBuffer(debugBuffer, 0, new Float32Array([0.0, 0.0, 0.0]));
  
   const shaderModule = device.createShaderModule({
     code: rayTracer

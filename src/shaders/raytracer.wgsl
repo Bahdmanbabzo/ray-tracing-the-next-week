@@ -2,7 +2,7 @@ struct VertexOutput {
     @builtin(position) position: vec4f,
 };
 @group(0) @binding(0) var<uniform> canvas_size: vec2f; 
-@group(0) @binding(1) var<storage, read_write> random_number: array<f32,1>;
+@group(0) @binding(1) var<storage, read_write> random_number: array<vec3f,1>;
 
 @vertex
 fn vs_main(
@@ -91,7 +91,7 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4f {
 
     let n = ndc.x * 12.9898 + ndc.y * 78.233 + 0.1234;
     let rnd = rand11(n); 
-    random_number[0] = rnd; 
+    random_number[0] = randVec3(rnd); 
 
     // Calculate ray direction
     let ray_direction = normalize(vec3f(viewport_x, viewport_y, -focal_length));

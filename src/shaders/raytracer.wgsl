@@ -23,7 +23,7 @@ fn rand11(n: f32) -> f32 {
     return fract(sin(n) * 43758.5453123); 
 }
 // Generates a random vec3 
-fn randVec3(p:f32) -> vec3f {
+fn rand_vec3(p:f32) -> vec3f {
     return vec3f(
         fract(sin(p * 12.9898) * 43758.5453),
         fract(sin(p * 78.233) * 24634.6345),
@@ -31,8 +31,8 @@ fn randVec3(p:f32) -> vec3f {
     );
 }
 
-fn randUnitVecAnalytic(seed: f32) -> vec3f {
-    let v = randVec3(seed); 
+fn rand_unit_vec_analytic(seed: f32) -> vec3f {
+    let v = rand_vec3(seed); 
     let u1 = v.x; 
     let u2 = v.y;
     let z = 1.0 - 2.0 * u1; 
@@ -61,7 +61,7 @@ fn ray_color(ray_direction: vec3f, ray_origin: vec3f) -> vec3f {
     var normal: vec3f;
     let sphere_count = 1; 
     let spheres = array<vec3f, 1>(
-        vec3f(0.0, 0.0, -3.0)
+        vec3f(0.0, 0.0, -6.0)
     );
     var i = 0u;
     for(var i: i32; i < sphere_count; i++) {
@@ -100,7 +100,7 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4f {
 
     let n = ndc.x * 12.9898 + ndc.y * 78.233 + 0.1234;
     let rnd = rand11(n); 
-    random_number[0] = randUnitVecAnalytic(rnd); 
+    random_number[0] = rand_unit_vec_analytic(rnd); 
 
     // Calculate ray direction
     let camera_ray_direction = normalize(vec3f(viewport_x, viewport_y, -focal_length));

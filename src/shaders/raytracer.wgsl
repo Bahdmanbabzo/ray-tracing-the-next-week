@@ -30,6 +30,7 @@ fn rand_vec3(p:f32) -> vec3f {
     );
 }
 
+// Returnns a random unit vector always on the sphere surface
 fn rand_unit_vec_analytic(seed: f32) -> vec3f {
     let v = rand_vec3(seed); 
     let u1 = v.x; 
@@ -40,6 +41,7 @@ fn rand_unit_vec_analytic(seed: f32) -> vec3f {
     return vec3f(r * cos(phi), r * sin(phi), z);
 }
 
+// Checks if a random vector is in the same hemisphere as the normal
 fn find_hemisphere(rand_vector: vec3f, normal: vec3f) -> vec3f {
     if (dot(rand_vector, normal) < 0.0) {
         return -rand_vector;
@@ -47,6 +49,8 @@ fn find_hemisphere(rand_vector: vec3f, normal: vec3f) -> vec3f {
         return rand_vector;
     }
 }
+
+// Checks for intersection with a sphere
 fn hit_sphere(sphere_center: vec3f, radius: f32, ray_origin: vec3f, ray_direction: vec3f) -> f32 {
     let oc = sphere_center - ray_origin; 
     let a = dot(ray_direction, ray_direction);
@@ -62,6 +66,7 @@ fn hit_sphere(sphere_center: vec3f, radius: f32, ray_origin: vec3f, ray_directio
 
 }
 
+// Calculates the color of the ray based on bounces
 fn ray_color(initial_ray_direction: vec3f, initial_ray_origin: vec3f) -> vec3f {
     var ray_direction: vec3f = initial_ray_direction;
     var ray_origin: vec3f = initial_ray_origin;

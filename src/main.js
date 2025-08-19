@@ -75,7 +75,6 @@ export default async function webgpu() {
       layout: bindGroupLayout,
       entries: [
         { binding: 0, resource: { buffer: canvasSizeBuffer }}, 
-        { binding: 1, resource: { buffer: debugBuffer }}
       ]
   });
   const commandBuffer = engine.encodeRenderPass(6, renderPipeline, vertexBuffer, bindGroup);

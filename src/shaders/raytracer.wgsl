@@ -2,7 +2,6 @@ struct VertexOutput {
     @builtin(position) position: vec4f,
 };
 @group(0) @binding(0) var<uniform> canvas_size: vec2f; 
-@group(0) @binding(1) var<storage, read_write> random_number: array<vec3f,1>;
 
 @vertex
 fn vs_main(
@@ -41,6 +40,13 @@ fn rand_unit_vec_analytic(seed: f32) -> vec3f {
     return vec3f(r * cos(phi), r * sin(phi), z);
 }
 
+fn find_hemisphere(rand_vector: vec3f, normal: vec3f) -> vec3f {
+    if (dot(rand_vector, normal) < 0.0) {
+        return -rand_vector;
+    } else {
+        return rand_vector;
+    }
+}
 fn hit_sphere(sphere_center: vec3f, radius: f32, ray_origin: vec3f, ray_direction: vec3f) -> f32 {
     let oc = sphere_center - ray_origin; 
     let a = dot(ray_direction, ray_direction);
@@ -56,29 +62,42 @@ fn hit_sphere(sphere_center: vec3f, radius: f32, ray_origin: vec3f, ray_directio
 
 }
 
-fn ray_color(ray_direction: vec3f, ray_origin: vec3f) -> vec3f {
-    var hit_point: vec3f;
-    var normal: vec3f;
-    let sphere_count = 1; 
-    let spheres = array<vec3f, 1>(
-        vec3f(0.0, 0.0, -6.0)
-    );
-    var i = 0u;
-    for(var i: i32; i < sphere_count; i++) {
-        let t = hit_sphere(spheres[i], 1.0, ray_origin, ray_direction);
-        if (t > 0.0) {
-            hit_point = ray_origin + t * ray_direction; 
-            normal = normalize(hit_point - spheres[i]);
-            return 0.5 * random_number[0]; // Simple shading based on normal
-        };
-        
-    };
+fn ray_color(initial_ray_direction: vec3f, initial_ray_origin: vec3f) -> vec3f {
+    var ray_direction: vec3f = initial_ray_direction;
+    var ray_origin: vec3f = initial_ray_origin;
+    var attenuation: vec3f = vec3f(1.0, 1.0, 1.0);
     
-    let a = 0.5 *(ray_direction.y + 1.0); 
-    let white = vec3f(1.0, 1.0, 1.0); 
-    let blue = vec3f(0.5, 0.7, 1.0); 
-
-    return mix(white, blue, a); 
+    let sphere: vec3f = vec3f(0.0, 0.0, -6.0);
+    let max_bounces: i32 = 10;
+    
+    for (var bounce: i32 = 0; bounce < max_bounces; bounce++) {
+        let t = hit_sphere(sphere, 1.0, ray_origin, ray_direction);
+        
+        if (t > 0.0) {
+            let hit_point: vec3f  = ray_origin + t * ray_direction; 
+            let normal: vec3f  = normalize(hit_point - sphere);
+            
+            // Generate a NEW random vector for THIS specific bounce
+            let bounce_seed: f32 = f32(bounce) * 123.456 + dot(hit_point, vec3f(1.0, 1.0, 1.0));
+            let random_vec: vec3f = rand_unit_vec_analytic(bounce_seed);
+            let hemisphere_vec: vec3f = find_hemisphere(random_vec, normal);
+            
+            // Set up the NEXT ray for the next bounce
+            ray_origin = hit_point + normal * 0.001; // Small offset
+            ray_direction = normalize(hemisphere_vec);
+            
+            // Absorb 50% of light per bounce
+            attenuation = attenuation * 1.0;
+        } else {
+            // Ray missed - hit background, return sky color
+            let a = 0.5 * (ray_direction.y + 1.0); 
+            let sky_color = mix(vec3f(1.0, 1.0, 1.0), vec3f(0.5, 0.7, 1.0), a);
+            return attenuation * sky_color;
+        }
+    }
+    
+    // Used all bounces - return black
+    return vec3f(0.0, 0.0, 0.0);
 }
 
 @fragment
@@ -97,11 +116,6 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4f {
     // Map to viewport coordinates
     let viewport_x = ndc.x * aspect_ratio; 
     let viewport_y = ndc.y ; 
-
-    let n = ndc.x * 12.9898 + ndc.y * 78.233 + 0.1234;
-    let rnd = rand11(n); 
-    random_number[0] = rand_unit_vec_analytic(rnd); 
-
     // Calculate ray direction
     let camera_ray_direction = normalize(vec3f(viewport_x, viewport_y, -focal_length));
     let pixel_color = ray_color(camera_ray_direction, camera_position); 

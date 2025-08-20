@@ -92,7 +92,7 @@ fn ray_color(initial_ray_direction: vec3f, initial_ray_origin: vec3f) -> vec3f {
             ray_direction = normalize(hemisphere_vec);
             
             // Absorb 50% of light per bounce
-            attenuation = attenuation * 1.0;
+            attenuation = attenuation * 0.5;
         } else {
             // Ray missed - hit background, return sky color
             let a = 0.5 * (ray_direction.y + 1.0); 

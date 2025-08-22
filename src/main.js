@@ -2,6 +2,7 @@ import Engine from './engine/engine.js';
 import RenderPipelineBuilder from './engine/renderPipeline.js';
 import quadShaderCode from './shaders/quad.wgsl?raw';
 import rayTracer from './shaders/rayTracer.wgsl?raw';
+import { Hittable } from './hittables.js';
 
 export default async function webgpu() {
   const canvas = document.querySelector('canvas');
@@ -19,12 +20,12 @@ export default async function webgpu() {
 
   const vertexData = new Float32Array([
     // x,    y
-    -1.0, -1.0, // bottom left
-     1.0, -1.0, // bottom right
-    -1.0,  1.0, // top left
-    -1.0,  1.0, // top left
-     1.0, -1.0, // bottom right
-     1.0,  1.0  // top right
+    -1.0, -1.0, 
+     1.0, -1.0, 
+    -1.0,  1.0, 
+    -1.0,  1.0, 
+     1.0, -1.0, 
+     1.0,  1.0 
   ]);
 
   const vertexBuffer = device.createBuffer({
@@ -55,7 +56,21 @@ export default async function webgpu() {
     usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC
   });
   device.queue.writeBuffer(debugBuffer, 0, new Float32Array([0.0, 0.0, 0.0]));
- 
+
+  const spheres = [
+    new Hittable(1.0, [0.0, 0.0, -6.0], 0.5, [0.8, 1.0, 1.0], 0.3),
+    new Hittable(1.0, [2.0, 0.0, -7.0], 0.5, [1.0, 1.0, 1.0], 0.0),
+    new Hittable(1.0, [-1.0, 0.0, -7.0], 0.5, [0.1, 0.2, 0.5], 0.0),
+    new Hittable(0.0, [0.0, -100.5, -1.0], 100.0, [0.8, 0.8, 0.0], 1.0)
+  ];
+  const allData = spheres.flatMap(sphere => sphere.arrayFormat);
+  const hittablesData = new Float32Array(allData);
+  const hittablesBuffer = device.createBuffer({
+    size: 256,
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+  });
+  device.queue.writeBuffer(hittablesBuffer, 0, hittablesData);
+
   const shaderModule = device.createShaderModule({
     code: rayTracer
   })
@@ -75,6 +90,7 @@ export default async function webgpu() {
       layout: bindGroupLayout,
       entries: [
         { binding: 0, resource: { buffer: canvasSizeBuffer }}, 
+        { binding: 1, resource: { buffer: hittablesBuffer}}
       ]
   });
   const commandBuffer = engine.encodeRenderPass(6, renderPipeline, vertexBuffer, bindGroup);

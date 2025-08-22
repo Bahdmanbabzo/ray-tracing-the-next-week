@@ -1,7 +1,15 @@
 struct VertexOutput {
     @builtin(position) position: vec4f,
 };
+struct Hittable {
+    position: vec4f, 
+    radius: f32, 
+    material: f32, 
+    albedo: vec4f, 
+    fuzz: f32 
+}
 @group(0) @binding(0) var<uniform> canvas_size: vec2f; 
+@group(0) @binding(1) var<uniform> hittables: array<Hittable, 4>;
 
 @vertex
 fn vs_main(
@@ -74,6 +82,7 @@ fn ray_color(initial_ray_direction: vec3f, initial_ray_origin: vec3f) -> vec3f {
     
     let sphere: vec3f = vec3f(0.0, 0.0, -6.0);
     let max_bounces: i32 = 10;
+    let hittables = hittables;
     
     for (var bounce: i32 = 0; bounce < max_bounces; bounce++) {
         let t = hit_sphere(sphere, 1.0, ray_origin, ray_direction);

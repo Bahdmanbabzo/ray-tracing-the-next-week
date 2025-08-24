@@ -1,8 +1,8 @@
 export class Hittable {
-    constructor(material, position, radius, albedo, fuzz) {
-    this.material = material;
+    constructor(position, radius,material, albedo, fuzz) {
     this.position = position;
-    this.radius = radius;
+    this.radius = radius; 
+    this.material = material; 
     this.albedo = albedo;
     this.fuzz = fuzz;
     }
@@ -12,8 +12,10 @@ export class Hittable {
             ...this.position, 
             this.radius, 
             this.material,
+            0.0, 0.0,
             ...this.albedo, 
-            this.fuzz
+            this.fuzz,
+            0.0, 0.0, 0.0
         ];
     }
 }

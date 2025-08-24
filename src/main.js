@@ -58,18 +58,25 @@ export default async function webgpu() {
   device.queue.writeBuffer(debugBuffer, 0, new Float32Array([0.0, 0.0, 0.0]));
 
   const spheres = [
-    new Hittable(1.0, [0.0, 0.0, -6.0], 0.5, [0.8, 1.0, 1.0], 0.3),
-    new Hittable(1.0, [2.0, 0.0, -7.0], 0.5, [1.0, 1.0, 1.0], 0.0),
-    new Hittable(1.0, [-1.0, 0.0, -7.0], 0.5, [0.1, 0.2, 0.5], 0.0),
-    new Hittable(0.0, [0.0, -100.5, -1.0], 100.0, [0.8, 0.8, 0.0], 1.0)
+    new Hittable([0.0, 0.0, -6.0, 0.0], 1.0, 1.0, [1.0, 0.6, 0.2, 0.0], 0.03),
+    new Hittable([2.0, 0.0, -7.0, 0.0], 0.5, 1.0, [1.0, 1.0, 1.0, 0.0], 0.3),
+    new Hittable([-2.0, 0.0, -8.0, 0.0], 0.5, 1.0, [0.8, 0.8, 1.0, 0.0], 0.1)
   ];
   const allData = spheres.flatMap(sphere => sphere.arrayFormat);
   const hittablesData = new Float32Array(allData);
+  console.log(hittablesData)
   const hittablesBuffer = device.createBuffer({
-    size: 256,
-    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+    size: 192,
+    usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
   });
   device.queue.writeBuffer(hittablesBuffer, 0, hittablesData);
+  console.log(hittablesBuffer)
+
+  const hittablesCountBuffer = device.createBuffer({
+    size: 4,
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+  });
+  device.queue.writeBuffer(hittablesCountBuffer, 0, new Int32Array([3]));
 
   const shaderModule = device.createShaderModule({
     code: rayTracer
@@ -90,7 +97,8 @@ export default async function webgpu() {
       layout: bindGroupLayout,
       entries: [
         { binding: 0, resource: { buffer: canvasSizeBuffer }}, 
-        { binding: 1, resource: { buffer: hittablesBuffer}}
+        { binding: 1, resource: { buffer: hittablesBuffer}},
+        { binding: 2, resource: { buffer: hittablesCountBuffer }}
       ]
   });
   const commandBuffer = engine.encodeRenderPass(6, renderPipeline, vertexBuffer, bindGroup);

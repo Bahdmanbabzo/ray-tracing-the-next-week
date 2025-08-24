@@ -2,14 +2,15 @@ struct VertexOutput {
     @builtin(position) position: vec4f,
 };
 struct Hittable {
-    position: vec4f, 
-    radius: f32, 
-    material: f32, 
-    albedo: vec4f, 
-    fuzz: f32 
-}
+    position: vec4f,
+    radius: f32,
+    material: f32,
+    albedo: vec4f,
+    fuzz: f32,
+};
 @group(0) @binding(0) var<uniform> canvas_size: vec2f; 
-@group(0) @binding(1) var<uniform> hittables: array<Hittable, 4>;
+@group(0) @binding(1) var<storage, read> hittable_objects: array<Hittable>;
+@group(0) @binding(2) var<uniform> hittable_count: i32;
 
 @vertex
 fn vs_main(
@@ -79,38 +80,46 @@ fn ray_color(initial_ray_direction: vec3f, initial_ray_origin: vec3f) -> vec3f {
     var ray_direction: vec3f = initial_ray_direction;
     var ray_origin: vec3f = initial_ray_origin;
     var attenuation: vec3f = vec3f(1.0, 1.0, 1.0);
-    
-    let sphere: vec3f = vec3f(0.0, 0.0, -6.0);
     let max_bounces: i32 = 10;
-    let hittables = hittables;
-    
+
     for (var bounce: i32 = 0; bounce < max_bounces; bounce++) {
-        let t = hit_sphere(sphere, 1.0, ray_origin, ray_direction);
+        var closest_t: f32 = -1.0;
+        var hit_sphere_index: i32 = -1;
         
-        if (t > 0.0) {
-            let hit_point: vec3f  = ray_origin + t * ray_direction; 
-            let normal: vec3f  = normalize(hit_point - sphere);
+        // Use the actual hittable buffer
+        for(var i: i32 = 0; i < hittable_count; i++) {
+            let t = hit_sphere(
+                hittable_objects[i].position.xyz,  // ✅ Use buffer position
+                hittable_objects[i].radius,        // ✅ Use buffer radius
+                ray_origin, 
+                ray_direction
+            );
+            if (t > 0.0 && (closest_t < 0.0 || t < closest_t)) {
+                closest_t = t;
+                hit_sphere_index = i;
+            }
+        }
+
+        if (hit_sphere_index >= 0) {
+            let hit_object = hittable_objects[hit_sphere_index];  // ✅ Use buffer data
+            let hit_point = ray_origin + closest_t * ray_direction; 
+            let normal = normalize(hit_point - hit_object.position.xyz);
             
-            // Generate a NEW random vector for THIS specific bounce
-            let bounce_seed: f32 = f32(bounce) * 123.456 + dot(hit_point, vec3f(1.0, 1.0, 1.0));
-            let random_vec: vec3f = rand_unit_vec_analytic(bounce_seed);
-            let hemisphere_vec: vec3f = find_hemisphere(random_vec, normal);
+            let bounce_seed = f32(bounce) * 123.456 + dot(hit_point, vec3f(1.0, 1.0, 1.0));
+            ray_origin = hit_point + normal * 0.001;
             
-            // Set up the NEXT ray for the next bounce
-            ray_origin = hit_point + normal * 0.001; // Small offset
-            ray_direction = normalize(hemisphere_vec);
+            let reflected = reflect(normalize(ray_direction), normal);
+            let fuzz_vec = rand_unit_vec_analytic(bounce_seed) * hit_object.fuzz;  // ✅ Use buffer fuzz
+            ray_direction = normalize(reflected + fuzz_vec);
             
-            // Absorb 50% of light per bounce
-            attenuation = attenuation * 0.5;
+            attenuation = attenuation * hit_object.albedo.xyz;  // ✅ Use buffer color
         } else {
-            // Ray missed - hit background, return sky color
             let a = 0.5 * (ray_direction.y + 1.0); 
             let sky_color = mix(vec3f(1.0, 1.0, 1.0), vec3f(0.5, 0.7, 1.0), a);
             return attenuation * sky_color;
         }
     }
     
-    // Used all bounces - return black
     return vec3f(0.0, 0.0, 0.0);
 }
 
